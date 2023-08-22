@@ -1,0 +1,87 @@
+service: aws-lambda-crud-reto-pragma
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - arn:aws:dynamodb:us-east-1:751902402387:table/UserTable
+
+functions:
+  getUser:
+    handler: src/handlers/getUser.getUser
+    events:
+      - http:
+          path: /getUser/{id}
+          method: get
+  addUser:
+    handler: src/handlers/addUser.addUser
+    events:
+      - http:
+          path: /addUser
+          method: post
+  getUsers:
+    handler: src/handlers/getUsers.getUsers
+    events:
+      - http:
+          path: /getUsers
+          method: get
+  deleteUser:
+    handler: src/handlers/deleteUser.deleteUser
+    events:
+      - http:
+          path: /deleteUser/{id}
+          method: delete
+  updateUser:
+    handler: src/handlers/updateUser.updateUser
+    events:
+      - http:
+          path: /updateUser/{id}
+          method: put
+  publish:
+    handler: src/handlers/useSns.publish
+    events:
+      - http:
+          path: /publish
+          method: post
+          cors: true
+  subscribe:
+    handler: src/handlers/useSns.subscribe
+    events:
+      - http:
+          path: /subscribe
+          method: post
+          cors: true
+  unsubscribe:
+    handler: src/handlers/useSns.unsubscribe
+    events:
+      - http:
+          path: /unsubscribe
+          method: post
+          cors: true
+  statusInSns:
+    handler: src/handlers/useSns.statusInSns
+    events:
+      - http:
+          path: /statusInSns
+          method: post
+          cors: true
+
+resources: # CloudFormation template syntax
+  Resources:
+    TransactionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UserTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
